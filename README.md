@@ -92,12 +92,18 @@ Documentação detalhada de todas as etapas do projeto, incluindo requisitos, im
 Análise crítica dos dados coletados na simulação via maquete.
 Preparação do relatório final, destacando conclusões, insights e sugestões para melhorias futuras.
 
-Referências utilizadas *
+Referências utilizadas 
+
 ARAÚJO, Gabriel Raykson Matos Brasil de, et al. A Transformação Digital no Contexto do Monitoramento de Encostas: Uma Visão Geral Sobre o Tema a Partir de uma Revisão. Revista COBRAE, VIII Conferência Brasileira sobre Estabilidade de Encostas, 2022.
+
 BRITO, Gilmar Gonçalves de. Modelo de monitoramento de deslizamento de encostas por meio de sensor multiparamétrico. 2013. 146 páginas.
 Centro Nacional de Monitoramento e Alertas de Desastres Naturais - CEMADEN. Deslizamentos de Terra no Brasil. Disponível em: http://www2.cemaden.gov.br/deslizamentos/. Acessado em: 21 de outubro de 2023.
+
 KIM, H. W. Development of wireless sensor node for landslide detection, Proceedings of the Asia-Pacific advanced network, vol. 42, 2016. 
+
 JRCBRASIL. Sistema de Monitoramento de Encostas. JRC Brasil. Disponível em: https://jrcbrasil.com/solucao/sistema-de-monitoramento-de-encostas/. Acesso em: 27 out. 2023. 
+
 LEÃO, Júlio Cesar; SOUZA, Paulo Henrique de. Sistema Inteligente de Monitoramento de Deslizamento de Solos. Revista Gestão e Sustentabilidade Ambiental, Florianópolis, v. 7, p. 508-524, 2018. 
+
 SEMIONE, Arthur; HOFFMANN, Kleyton; et al. Desenvolvimento de Módulos para Monitoramento de Encostas com o Uso de Sensoriamento Wireless. In: XX Congresso Brasileiro de Mecânica dos Solos e Engenharia Geotécnica, IX Simpósio Brasileiro de Mecânica das Rochas, IX Simpósio Brasileiro de Engenheiros Geotécnicos Jovens, VI Conferência Sul Americana de Engenheiros Geotécnicos Jovens, 2020. Páginas 831-837.
 
