@@ -38,11 +38,17 @@ A materialização do projeto ocorrerá por meio de uma maquete, proporcionando 
 Objetivo Específico
 
 Este projeto tem como objetivo principal desenvolver um protótipo para o monitoramento de encostas, viabilizando a coleta e processamento em tempo real de dados relativos aos deslocamentos em ambientes críticos. Com isso, delineamos os seguintes objetivos específicos:
+
 1: Seleção de Sensores Adequados: Realizar uma seleção criteriosa de sensores, como o GY-521/MPU6050, capazes de efetuar medições precisas e confiáveis dos parâmetros relevantes para o monitoramento de encostas.
+
 2: Configuração do ESP32 e GY-521/MPU6050: Programar o ESP32 para adquirir dados do sensor GY-521/MPU6050, processar as informações e efetuar o envio seguro e confiável dos dados obtidos.
+
 3: Implementação da Comunicação MQTT: Configurar o protocolo MQTT no ESP32, estabelecendo uma comunicação eficiente com o servidor MQTT (broker Mosquitto), possibilitando o monitoramento em tempo real das oscilações em encostas.
+
 4: Instalação e Configuração do Grafana: Realizar a instalação e configuração do software Grafana, estabelecendo alertas em caso de ultrapassagem dos níveis considerados seguros. Desenvolver uma interface de visualização de dados que permita a apresentação acessível e compreensível das informações coletadas, facilitando o acompanhamento das condições da encosta em tempo real.
+
 5: Simulação e Análise de Resultados via Maquete: Construir uma maquete para simular as condições de deslocamento de encostas, analisando os resultados e gerando insights que possam ser usados para embasar decisões informadas relacionadas à segurança e prevenção de desastres naturais.
+
 6: Relatório Final: Consolidar todas as etapas anteriores em um relatório abrangente, documentando o desenvolvimento do protótipo, os resultados obtidos e as conclusões alcançadas ao longo do projeto.
 
 SPRINTS
@@ -51,22 +57,27 @@ Sprint 1: Planejamento e Seleção de Sensores
 Levantamento de requisitos e especificações para a seleção de sensores, com foco no GY-521/MPU6050.
 Análise de mercado para identificação de sensores adequados às necessidades do monitoramento de encostas.
 Documentação dos critérios de seleção e justificativas para a escolha do sensor.
+
 Sprint 2: Desenvolvimento do Módulo de Aquisição de Dados 
 Configuração do ambiente de desenvolvimento, incluindo a instalação do ESP32 e setup do GY-521/MPU6050.
 Programação do ESP32 para aquisição e processamento preliminar de dados do sensor.
 Implementação de testes unitários para garantir a confiabilidade da aquisição de dados.
+
 Sprint 3: Configuração da Comunicação MQTT 
 Configuração do protocolo MQTT no ESP32 para estabelecer a comunicação eficiente com o broker Mosquitto.
 Desenvolvimento de mecanismos de segurança para a transmissão de dados.
 Testes de comunicação e documentação das configurações realizadas.
+
 Sprint 4: Instalação e Configuração do Grafana 
 Instalação do software Grafana e configuração do ambiente para a integração com o ESP32.
 Estabelecimento de alertas no Grafana para notificar em caso de ultrapassagem de níveis seguros.
 Desenvolvimento da interface de visualização de dados de acordo com as necessidades do monitoramento de encostas.
+
 Sprint 5: Construção da Maquete e Simulação 
 Planejamento e aquisição de materiais para a construção da maquete.
 Implementação da maquete para simular condições de deslocamento de encostas.
 Integração do protótipo desenvolvido nas fases anteriores à maquete para análise dos resultados.
+
 Sprint 6: Elaboração do Relatório Final 
 Documentação detalhada de todas as etapas do projeto, incluindo requisitos, implementações, testes e resultados.
 Análise crítica dos dados coletados na simulação via maquete.
