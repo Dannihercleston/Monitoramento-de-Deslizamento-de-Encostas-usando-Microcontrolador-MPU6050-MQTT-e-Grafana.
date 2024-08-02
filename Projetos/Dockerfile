@@ -1,1 +1,0 @@
-FROM  nginx/nginx-prometheus-exporter
