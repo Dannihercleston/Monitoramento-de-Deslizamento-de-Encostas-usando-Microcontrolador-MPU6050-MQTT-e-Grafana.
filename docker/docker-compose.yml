@@ -17,7 +17,7 @@ services:
     ports:
       - "8086:8086"
     environment:
-      - INFLUXDB_DB=<Dados>
+      - INFLUXDB_DB=meu_banco_de_dados
       - INFLUXDB_ADMIN_USER=admin
       - INFLUXDB_ADMIN_PASSWORD=admin123
     networks:
@@ -27,9 +27,22 @@ services:
     image: grafana/grafana
     container_name: grafana
     ports:
-      - "4000:4000"
+      - "4000:3000"
     depends_on:
       - influxdb
+    networks:
+      - influxdb_network
+
+  mosquitto:
+    image: eclipse-mosquitto
+    container_name: mqtt
+    restart: always
+    volumes:
+      - ./config/mosquitto/config:/mosquitto/config
+      - ./config/mosquitto/data:/mosquitto/data
+      - ./config/mosquitto/log:/mosquitto/log
+    ports:
+      - "1883:1883"
     networks:
       - influxdb_network
 
