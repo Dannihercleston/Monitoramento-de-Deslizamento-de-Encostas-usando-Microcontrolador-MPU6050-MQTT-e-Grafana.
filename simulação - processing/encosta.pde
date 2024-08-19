@@ -18,9 +18,13 @@ float gyroX, gyroY, gyroZ; // Inclinação simulada do giroscópio
 float accelX, accelY, accelZ; // Aceleração simulada
 int sensorX, sensorY; // Posição do sensor na grade
 
-// Variáveis para movimentação do sensor
+// Variáveis para movimentação da encosta
 long lastMoveTime = 0; // Último tempo de movimentação
 long moveInterval = 60000; // Intervalo de 1 minuto (60000 ms)
+boolean vibrating = false; // Estado da vibração
+long vibrationStartTime; // Tempo de início da vibração
+long vibrationDuration = 10000; // Duração da vibração em milissegundos (10 segundos)
+
 
 void setup() {
   size(800, 600, P3D);
@@ -37,26 +41,38 @@ void setup() {
   sensorY = rows / 2; // Posição central na grade
 }
 
+//Função chamada continuamente para atualizar e desenhar o conteúdo na tela
 void draw() {
   background(135, 206, 250); // Cor do fundo
 
-  // Atualiza o terreno se estiver chovendo
-  if (raining) {
-    updateRain();
-    updateTerrain();
-    updateSensors();
-  }
-
-  // Verifica se é hora de mover o sensor
+  // Verifica se é hora de iniciar a vibração
   if (millis() - lastMoveTime >= moveInterval) {
-    moveSensor();
+    vibrating = true;
+    vibrationStartTime = millis();
     lastMoveTime = millis(); // Atualiza o tempo de última movimentação
   }
+
+  // Aplica vibração se estiver no estado de vibração
+  if (vibrating) {
+    if (millis() - vibrationStartTime < vibrationDuration) {
+      applyVibration(); // Aplica vibração ao terreno
+    } else {
+      vibrating = false; // Interrompe a vibração após a duração
+    }
+  }
+
+  // Atualiza o terreno fora do período de vibração
+  if (!vibrating) {
+    updateTerrain();
+  }
+
+  // Atualiza os dados do sensor
+  updateSensorReadings();
 
   // Desenha o terreno
   pushMatrix();
   translate(width / 2, height / 2);
-  rotateX(PI/3);
+  rotateX(PI / 3);
   translate(-w / 2, -h / 2);
 
   for (int x = 0; x < cols - 1; x++) {
@@ -71,13 +87,28 @@ void draw() {
     }
   }
 
-  // Desenha o sensor na encosta
+  // Desenha o sensor fixo na encosta
   drawSensor();
 
   popMatrix();
 
   // Desenha os valores do sensor na tela
   displaySensorReadings();
+}
+
+// Função para atualizar as leituras do sensor
+void updateSensorReadings() {
+  // Atualiza os valores do sensor com base na posição do sensor na grade
+  if (sensorX >= 0 && sensorX < cols && sensorY >= 0 && sensorY < rows) {
+    // Simula leitura do giroscópio e acelerômetro baseando-se no terreno
+    gyroX = terrain[sensorX][sensorY] * 0.01; // Exemplo de cálculo para giroscópio
+    gyroY = terrain[sensorX][sensorY] * 0.01; // Exemplo de cálculo para giroscópio
+    gyroZ = 0; // Gira apenas no plano X-Y
+
+    accelX = velocity[sensorX][sensorY] * 0.1; // Exemplo de cálculo para acelerômetro
+    accelY = velocity[sensorX][sensorY] * 0.1; // Exemplo de cálculo para acelerômetro
+    accelZ = 0; // Aceleração no plano X-Y
+  }
 }
 
 void generateTerrain() {
@@ -92,6 +123,7 @@ void generateTerrain() {
   }
 }
 
+// Atualiza o terreno com base na gravidade e na intensidade da chuva
 void updateTerrain() {
   for (int x = 0; x < cols; x++) {
     for (int y = 0; y < rows; y++) {
@@ -111,49 +143,29 @@ void updateTerrain() {
   }
 }
 
-void updateRain() {
-  long currentTime = millis();
-  if (currentTime - rainStartTime < rainDuration) {
-    // Incrementa a intensidade da chuva gradualmente
-    rainIntensity = map(currentTime - rainStartTime, 0, rainDuration, 0, maxRainIntensity);
-  } else {
-    // Após a duração da chuva, continua a aplicar o máximo de intensidade
-    rainIntensity = maxRainIntensity;
+// Aplica uma vibração ao terreno
+void applyVibration() {
+  for (int x = 0; x < cols; x++) {
+    for (int y = 0; y < rows; y++) {
+      // Adiciona uma pequena oscilação à altura do terreno
+      float vibrationStrength = 10; // Força da vibração
+      terrain[x][y] += sin(millis() * 0.01) * vibrationStrength;
+    }
   }
 }
 
-void updateSensors() {
-  // Calcula a inclinação e aceleração médias para simular o giroscópio
-  gyroX = terrain[sensorX][sensorY];
-  gyroY = velocity[sensorX][sensorY];
-  gyroZ = acceleration[sensorX][sensorY];
-
-  // Simula valores do acelerômetro baseados na inclinação
-  accelX = gyroX * gravity;
-  accelY = gyroY * gravity;
-  accelZ = gyroZ * gravity;
-}
-
-void moveSensor() {
-  // Move o sensor para uma nova posição aleatória na grade
-  sensorX = int(random(cols));
-  sensorY = int(random(rows));
-
-  // Atualiza as leituras do sensor na nova posição
-  updateSensors();
-}
-
+// Desenha o sensor
 void drawSensor() {
-  // Desenha o sensor como uma pequena esfera na posição designada
+  // Desenha o sensor como uma pequena esfera preta na posição designada
   pushMatrix();
   translate(sensorX * scl, sensorY * scl, terrain[sensorX][sensorY]);
-  fill(255, 0, 0); // Cor vermelha para destacar o sensor
+  fill(0); // Cor preta para o sensor
   sphere(8); // Esfera representando o sensor
   popMatrix();
 }
 
+// Desenha as leituras do sensor na tela
 void displaySensorReadings() {
-  // Desenha as leituras do sensor na tela
   fill(0);
   textSize(14);
   text("Giroscópio (Inclinação):", 10, 20);
@@ -174,10 +186,10 @@ void displaySensorReadings() {
   }
 }
 
+// Comandos
 void keyPressed() {
   if (key == 'r' || key == 'R') {
     generateTerrain(); // Redefine o terreno
-    //simulating = false; // Para a simulação
   } else if (key == 'c' || key == 'C') {
     raining = true;
     rainStartTime = millis(); // Marca o início da chuva
