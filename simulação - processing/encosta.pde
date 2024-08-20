@@ -1,30 +1,38 @@
+import processing.net.*;  // Biblioteca para comunicação de rede
+import processing.serial.*; // Biblioteca para comunicação serial
+
+// Configurações da rede WiFi (não utilizadas diretamente no Processing)
+final String ssid = "Livia";  // Substitua pelo nome da sua rede WiFi
+final String password = "459866kaio";  // Substitua pela senha da sua rede WiFi
+
+// Configurações do MQTT
+final String mqttServer = "test.mosquitto.org";
+final int mqttPort = 1883;
+final String topic = "sensor/simulacao";
+
+// Variáveis do sensor
+float gyroX, gyroY, gyroZ;
+float accelX, accelY, accelZ;
+int sensorX, sensorY;
+
+// Variáveis do terreno e movimento da encosta
 int cols, rows;
-int scl = 20; // Escala da malha
-float w = 1200; // Largura da malha
-float h = 800; // Altura da malha
+int scl = 20;
+float w = 1200;
+float h = 800;
 float[][] terrain;
 float[][] velocity;
 float[][] acceleration;
-float gravity = 0.05; // Força da gravidade
-float noiseScale = 0.1; // Escala de ruído para a geração do terreno
-float rainIntensity = 0.0; // Intensidade da chuva
-float maxRainIntensity = 0.1; // Intensidade máxima da chuva
-boolean raining = false; // Estado da chuva
-long rainStartTime; // Tempo de início da chuva
-long rainDuration = 5000; // Duração da chuva em milissegundos
+float gravity = 0.05;
+float noiseScale = 0.1;
+long lastMoveTime = 0;
+long moveInterval = 60000;
+boolean vibrating = false;
+long vibrationStartTime;
+long vibrationDuration = 10000;
+boolean moving = false;
 
-// Variáveis do sensor
-float gyroX, gyroY, gyroZ; // Inclinação simulada do giroscópio
-float accelX, accelY, accelZ; // Aceleração simulada
-int sensorX, sensorY; // Posição do sensor na grade
-
-// Variáveis para movimentação da encosta
-long lastMoveTime = 0; // Último tempo de movimentação
-long moveInterval = 60000; // Intervalo de 1 minuto (60000 ms)
-boolean vibrating = false; // Estado da vibração
-long vibrationStartTime; // Tempo de início da vibração
-long vibrationDuration = 10000; // Duração da vibração em milissegundos (10 segundos)
-
+Client mqttClient;
 
 void setup() {
   size(800, 600, P3D);
@@ -35,41 +43,38 @@ void setup() {
   acceleration = new float[cols][rows];
   generateTerrain();
   noStroke();
-  
-  // Inicializa a posição do sensor
-  sensorX = cols / 2; // Posição central na grade
-  sensorY = rows / 2; // Posição central na grade
+
+  sensorX = cols / 2;
+  sensorY = rows / 2;
+
+  // Inicializa o cliente MQTT
+  mqttClient = new Client(this, mqttServer, mqttPort);
 }
 
-//Função chamada continuamente para atualizar e desenhar o conteúdo na tela
 void draw() {
-  background(135, 206, 250); // Cor do fundo
+  background(135, 206, 250);
 
-  // Verifica se é hora de iniciar a vibração
-  if (millis() - lastMoveTime >= moveInterval) {
+  if (moving && millis() - lastMoveTime >= moveInterval) {
     vibrating = true;
     vibrationStartTime = millis();
-    lastMoveTime = millis(); // Atualiza o tempo de última movimentação
+    lastMoveTime = millis();
   }
 
-  // Aplica vibração se estiver no estado de vibração
   if (vibrating) {
     if (millis() - vibrationStartTime < vibrationDuration) {
-      applyVibration(); // Aplica vibração ao terreno
+      applyVibration();
     } else {
-      vibrating = false; // Interrompe a vibração após a duração
+      vibrating = false;
     }
   }
 
-  // Atualiza o terreno fora do período de vibração
   if (!vibrating) {
     updateTerrain();
   }
 
-  // Atualiza os dados do sensor
   updateSensorReadings();
+  sendToMQTT(gyroX, gyroY, gyroZ, accelX, accelY, accelZ); // Envia os dados para o MQTT
 
-  // Desenha o terreno
   pushMatrix();
   translate(width / 2, height / 2);
   rotateX(PI / 3);
@@ -77,7 +82,7 @@ void draw() {
 
   for (int x = 0; x < cols - 1; x++) {
     for (int y = 0; y < rows - 1; y++) {
-      fill(139, 69, 19); // Cor do terreno
+      fill(139, 69, 19);
       beginShape(QUADS);
       vertex(x * scl, y * scl, terrain[x][y]);
       vertex((x + 1) * scl, y * scl, terrain[x + 1][y]);
@@ -87,27 +92,21 @@ void draw() {
     }
   }
 
-  // Desenha o sensor fixo na encosta
   drawSensor();
-
   popMatrix();
 
-  // Desenha os valores do sensor na tela
   displaySensorReadings();
 }
 
-// Função para atualizar as leituras do sensor
 void updateSensorReadings() {
-  // Atualiza os valores do sensor com base na posição do sensor na grade
   if (sensorX >= 0 && sensorX < cols && sensorY >= 0 && sensorY < rows) {
-    // Simula leitura do giroscópio e acelerômetro baseando-se no terreno
-    gyroX = terrain[sensorX][sensorY] * 0.01; // Exemplo de cálculo para giroscópio
-    gyroY = terrain[sensorX][sensorY] * 0.01; // Exemplo de cálculo para giroscópio
-    gyroZ = 0; // Gira apenas no plano X-Y
+    gyroX = terrain[sensorX][sensorY] * 0.01;
+    gyroY = terrain[sensorX][sensorY] * 0.01;
+    gyroZ = 0;
 
-    accelX = velocity[sensorX][sensorY] * 0.1; // Exemplo de cálculo para acelerômetro
-    accelY = velocity[sensorX][sensorY] * 0.1; // Exemplo de cálculo para acelerômetro
-    accelZ = 0; // Aceleração no plano X-Y
+    accelX = velocity[sensorX][sensorY] * 0.1;
+    accelY = velocity[sensorX][sensorY] * 0.1;
+    accelZ = 0;
   }
 }
 
@@ -123,18 +122,13 @@ void generateTerrain() {
   }
 }
 
-// Atualiza o terreno com base na gravidade e na intensidade da chuva
 void updateTerrain() {
   for (int x = 0; x < cols; x++) {
     for (int y = 0; y < rows; y++) {
-      // Aplica gravidade às células com base na inclinação
-      acceleration[x][y] = gravity * (terrain[x][y] / 100.0) + rainIntensity;
-
-      // Atualiza a velocidade e a altura
+      acceleration[x][y] = gravity * (terrain[x][y] / 100.0);
       velocity[x][y] += acceleration[x][y];
       terrain[x][y] -= velocity[x][y];
 
-      // Limita o deslizamento para não ir abaixo de um certo nível
       if (terrain[x][y] < -150) {
         terrain[x][y] = -150;
         velocity[x][y] = 0;
@@ -143,28 +137,23 @@ void updateTerrain() {
   }
 }
 
-// Aplica uma vibração ao terreno
 void applyVibration() {
   for (int x = 0; x < cols; x++) {
     for (int y = 0; y < rows; y++) {
-      // Adiciona uma pequena oscilação à altura do terreno
-      float vibrationStrength = 10; // Força da vibração
+      float vibrationStrength = 10;
       terrain[x][y] += sin(millis() * 0.01) * vibrationStrength;
     }
   }
 }
 
-// Desenha o sensor
 void drawSensor() {
-  // Desenha o sensor como uma pequena esfera preta na posição designada
   pushMatrix();
   translate(sensorX * scl, sensorY * scl, terrain[sensorX][sensorY]);
-  fill(0); // Cor preta para o sensor
-  sphere(8); // Esfera representando o sensor
+  fill(0);
+  sphere(8);
   popMatrix();
 }
 
-// Desenha as leituras do sensor na tela
 void displaySensorReadings() {
   fill(0);
   textSize(14);
@@ -177,21 +166,46 @@ void displaySensorReadings() {
   text("X: " + nf(accelX, 1, 2), 10, 140);
   text("Y: " + nf(accelY, 1, 2), 10, 160);
   text("Z: " + nf(accelZ, 1, 2), 10, 180);
+}
 
-  if (raining) {
-    text("Chovendo: Sim", 10, 220);
-    text("Intensidade da Chuva: " + nf(rainIntensity, 0, 2), 10, 240);
-  } else {
-    text("Chovendo: Não", 10, 220);
+// Função para enviar os dados do sensor para um tópico MQTT
+void sendToMQTT(float gyroX, float gyroY, float gyroZ, float accelX, float accelY, float accelZ) {
+  if (!mqttClient.active()) {
+    reconnectMQTT();
+  }
+
+  String payload = "Giroscopio: X=" + nf(gyroX, 1, 2) + ", Y=" + nf(gyroY, 1, 2) + ", Z=" + nf(gyroZ, 1, 2);
+  payload += " | Acelerometro: X=" + nf(accelX, 1, 2) + ", Y=" + nf(accelY, 1, 2) + ", Z=" + nf(accelZ, 1, 2);
+  mqttClient.write(payload);
+  println("Dados enviados ao MQTT: " + payload);
+}
+
+// Função para reconectar ao broker MQTT
+void reconnectMQTT() {
+  while (!mqttClient.active()) {
+    println("Tentando conectar ao broker MQTT...");
+    mqttClient = new Client(this, mqttServer, mqttPort);
+    if (mqttClient.active()) {
+      println("Conectado!");
+    } else {
+      println("Falha na conexão, tentando novamente em 5 segundos...");
+      delay(5000);
+    }
   }
 }
 
-// Comandos
+// Comandos de teclado para reiniciar terreno ou alternar movimento
 void keyPressed() {
   if (key == 'r' || key == 'R') {
-    generateTerrain(); // Redefine o terreno
-  } else if (key == 'c' || key == 'C') {
-    raining = true;
-    rainStartTime = millis(); // Marca o início da chuva
+    generateTerrain();
+  } else if (key == 'm' || key == 'M') {
+    moving = !moving;
+    if (moving) {
+      println("Movimento iniciado.");
+      lastMoveTime = millis();
+    } else {
+      println("Movimento parado.");
+      vibrating = false;
+    }
   }
 }
