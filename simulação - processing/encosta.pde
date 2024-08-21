@@ -2,10 +2,8 @@ import processing.net.*;  // Biblioteca para comunicação de rede
 import processing.serial.*; // Biblioteca para comunicação serial
 
 // Configurações da rede WiFi (não utilizadas diretamente no Processing)
-
-final String ssid = "";  //  nome da rede WiFi
-final String password = "";  // senha rede WiFi
-
+final String ssid = "";  //  nome da  rede WiFi
+final String password = "";  //  senha da  rede WiFi
 
 // Configurações do MQTT
 final String mqttServer = "test.mosquitto.org";
@@ -22,7 +20,7 @@ int cols, rows;
 int scl = 20;
 float w = 1200;
 float h = 800;
-87916e3d3be8263170afc0fc1bcd867d7bde4334float[][] terrain;
+float[][] terrain;
 float[][] velocity;
 float[][] acceleration;
 float gravity = 0.05;
@@ -111,11 +109,11 @@ void updateSensorReadings() {
   if (sensorX >= 0 && sensorX < cols && sensorY >= 0 && sensorY < rows) {
     gyroX = terrain[sensorX][sensorY] * 0.01;
     gyroY = terrain[sensorX][sensorY] * 0.01;
-    gyroZ = 0;
+    gyroZ = terrain[sensorX][sensorY] * 0.01; // Atualiza o eixo Z
 
     accelX = velocity[sensorX][sensorY] * 0.1;
     accelY = velocity[sensorX][sensorY] * 0.1;
-    accelZ = 0;
+    accelZ = velocity[sensorX][sensorY] * 0.1; // Atualiza o eixo Z
   }
 }
 
