@@ -2,8 +2,8 @@ import processing.net.*;  // Biblioteca para comunicação de rede
 import processing.serial.*; // Biblioteca para comunicação serial
 
 // Configurações da rede WiFi (não utilizadas diretamente no Processing)
-final String ssid = "Livia";  // Substitua pelo nome da sua rede WiFi
-final String password = "459866kaio";  // Substitua pela senha da sua rede WiFi
+final String ssid = "";  // Substitua pelo nome da sua rede WiFi
+final String password = "";  // Substitua pela senha da sua rede WiFi
 
 // Configurações do MQTT
 final String mqttServer = "test.mosquitto.org";
