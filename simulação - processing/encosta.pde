@@ -2,8 +2,8 @@ import processing.net.*;  // Biblioteca para comunicação de rede
 import processing.serial.*; // Biblioteca para comunicação serial
 
 // Configurações da rede WiFi (não utilizadas diretamente no Processing)
-final String ssid = "Livia";  // Substitua pelo nome da sua rede WiFi
-final String password = "459866kaio";  // Substitua pela senha da sua rede WiFi
+final String ssid = "";  //  nome da rede WiFi
+final String password = "";  // senha rede WiFi
 
 // Configurações do MQTT
 final String mqttServer = "test.mosquitto.org";
@@ -32,6 +32,9 @@ long vibrationStartTime;
 long vibrationDuration = 10000;
 boolean moving = false;
 
+// Lista de casas
+ArrayList<House> houses = new ArrayList<House>();
+
 Client mqttClient;
 
 void setup() {
@@ -49,6 +52,9 @@ void setup() {
 
   // Inicializa o cliente MQTT
   mqttClient = new Client(this, mqttServer, mqttPort);
+
+  // Adiciona casas ao redor do sensor
+  addHousesAroundSensor();
 }
 
 void draw() {
@@ -93,6 +99,7 @@ void draw() {
   }
 
   drawSensor();
+  drawHouses();
   popMatrix();
 
   displaySensorReadings();
@@ -135,6 +142,11 @@ void updateTerrain() {
       }
     }
   }
+
+  // Atualiza a posição das casas
+  for (House house : houses) {
+    house.updatePosition(terrain);
+  }
 }
 
 void applyVibration() {
@@ -152,6 +164,12 @@ void drawSensor() {
   fill(0);
   sphere(8);
   popMatrix();
+}
+
+void drawHouses() {
+  for (House house : houses) {
+    house.display();
+  }
 }
 
 void displaySensorReadings() {
@@ -207,5 +225,41 @@ void keyPressed() {
       println("Movimento parado.");
       vibrating = false;
     }
+  }
+}
+
+// Classe para representar uma casa
+class House {
+  int x, y;
+  float z;
+
+  House(int x, int y, float z) {
+    this.x = x;
+    this.y = y;
+    this.z = z;
+  }
+
+  void updatePosition(float[][] terrain) {
+    this.z = terrain[x][y];
+  }
+
+  void display() {
+    pushMatrix();
+    translate(x * scl, y * scl, z);
+    fill(255, 200, 0);
+    box(scl * 0.8);
+    popMatrix();
+  }
+}
+
+// Função para adicionar casas ao redor do sensor
+void addHousesAroundSensor() {
+  int houseCount = 4;
+  int offset = 2;
+
+  for (int i = 0; i < houseCount; i++) {
+    int houseX = sensorX + (i % 2 == 0 ? -offset : offset);
+    int houseY = sensorY + (i < 2 ? -offset : offset);
+    houses.add(new House(houseX, houseY, terrain[houseX][houseY]));
   }
 }
