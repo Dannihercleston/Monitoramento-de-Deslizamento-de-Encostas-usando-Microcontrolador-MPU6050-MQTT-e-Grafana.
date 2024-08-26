@@ -6,3 +6,14 @@ Os sistemas do projeto "Monitoramento de Encostas usando Microcontrolador, MPU60
  ![arquitetura_projeto](/Wiki/imagens_projeto/arquitetura.jpeg)
 
 
+<pre>
+Protoboard e Codigo ino
+</pre>
+
+Antes de mais nada, é necessário conectar o sensor MPU6050, ESP32 ao protoboard e a pilha de 9V ao protoboard. Depois, inserir o codigo ino na sketch do programa arduino. Para o codigo se comunicar com o microcontrolador, deve ser baixado algumas bibliotecas, incluido "adafruit_sensor", adafruit_MPU6050" e "pubsubclient".
+
+
+<pre>
+Criando os Containers
+</pre>
+
