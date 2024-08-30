@@ -1,6 +1,7 @@
 # Monitoramento de Deslizamento de Encostas, usando Microcontrolador, MPU6050, MQTT, Docker, InfluxDB e Grafana.
 
-![Arquitetura do Projeto](https://github.com/user-attachments/assets/e5a0dd5d-b3b9-401f-ae7e-f535bf86a755)
+![Arquitetura do projeto](https://github.com/user-attachments/assets/b9516024-a8bf-4c9f-a6cb-0c6d3c58cb77)
+
 
 
 Resumo da proposta
