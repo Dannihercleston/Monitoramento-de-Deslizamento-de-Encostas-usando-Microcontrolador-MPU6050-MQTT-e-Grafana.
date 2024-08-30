@@ -1,14 +1,20 @@
-import processing.net.*;  // Biblioteca para comunicação de rede
-import processing.serial.*; // Biblioteca para comunicação serial
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
+import processing.serial.*;
+import java.util.ArrayList;
+import processing.data.JSONObject;  // Importação da biblioteca JSON interna do Processing
 
 // Configurações da rede WiFi (não utilizadas diretamente no Processing)
-final String ssid = "";  //  nome da  rede WiFi
-final String password = "";  //  senha da  rede WiFi
+final String ssid = "";  // nome da rede WiFi
+final String password = "";  // senha da rede WiFi
 
 // Configurações do MQTT
-final String mqttServer = "test.mosquitto.org";
-final int mqttPort = 1883;
-final String topic = "sensor/simulacao";
+final String mqttBroker = "tcp://test.mosquitto.org:1883";
+final String mqttClientId = "ProcessingClient";
+final String mqttTopic = "Encostas/dados";
 
 // Variáveis do sensor
 float gyroX, gyroY, gyroZ;
@@ -35,7 +41,7 @@ boolean moving = false;
 // Lista de casas
 ArrayList<House> houses = new ArrayList<House>();
 
-Client mqttClient;
+MqttClient client;
 
 void setup() {
   size(800, 600, P3D);
@@ -50,8 +56,8 @@ void setup() {
   sensorX = cols / 2;
   sensorY = rows / 2;
 
-  // Inicializa o cliente MQTT
-  mqttClient = new Client(this, mqttServer, mqttPort);
+  // Conectar ao broker MQTT
+  connectToMQTT();
 
   // Adiciona casas ao redor do sensor
   addHousesAroundSensor();
@@ -78,9 +84,6 @@ void draw() {
     updateTerrain();
   }
 
-  updateSensorReadings();
-  sendToMQTT(gyroX, gyroY, gyroZ, accelX, accelY, accelZ); // Envia os dados para o MQTT
-
   pushMatrix();
   translate(width / 2, height / 2);
   rotateX(PI / 3);
@@ -105,16 +108,43 @@ void draw() {
   displaySensorReadings();
 }
 
-void updateSensorReadings() {
-  if (sensorX >= 0 && sensorX < cols && sensorY >= 0 && sensorY < rows) {
-    gyroX = terrain[sensorX][sensorY] * 0.01;
-    gyroY = terrain[sensorX][sensorY] * 0.01;
-    gyroZ = terrain[sensorX][sensorY] * 0.01; // Atualiza o eixo Z
-
-    accelX = velocity[sensorX][sensorY] * 0.1;
-    accelY = velocity[sensorX][sensorY] * 0.1;
-    accelZ = velocity[sensorX][sensorY] * 0.1; // Atualiza o eixo Z
+// Conectar ao broker MQTT e assinar o tópico
+void connectToMQTT() {
+  try {
+    client = new MqttClient(mqttBroker, mqttClientId, new MemoryPersistence());
+    MqttConnectOptions connOpts = new MqttConnectOptions();
+    connOpts.setCleanSession(true);
+    client.connect(connOpts);
+    client.subscribe(mqttTopic, (topic, msg) -> {
+      String payload = new String(msg.getPayload());
+      parseSensorData(payload);
+    });
+    println("Conectado ao broker MQTT e inscrito no tópico: " + mqttTopic);
+  } catch (MqttException e) {
+    e.printStackTrace();
+    println("Erro ao conectar ao broker MQTT.");
   }
+}
+
+// Processar os dados do sensor recebidos do MQTT
+void parseSensorData(String payload) {
+    try {
+        JSONObject json = JSONObject.parse(payload);  // Usando a biblioteca JSON interna
+
+        // Extrair os valores do JSON
+        accelX = json.getFloat("ax");
+        accelY = json.getFloat("ay");
+        accelZ = json.getFloat("az");
+        gyroX = json.getFloat("gx");
+        gyroY = json.getFloat("gy");
+        gyroZ = json.getFloat("gz");
+
+        // Exibir os dados recebidos no console
+        println("Dados recebidos: ax=" + accelX + ", ay=" + accelY + ", az=" + accelZ +
+                ", gx=" + gyroX + ", gy=" + gyroY + ", gz=" + gyroZ);
+    } catch (Exception e) {
+        println("Erro ao processar dados JSON: " + payload);
+    }
 }
 
 void generateTerrain() {
@@ -186,80 +216,50 @@ void displaySensorReadings() {
   text("Z: " + nf(accelZ, 1, 2), 10, 180);
 }
 
-// Função para enviar os dados do sensor para um tópico MQTT
-void sendToMQTT(float gyroX, float gyroY, float gyroZ, float accelX, float accelY, float accelZ) {
-  if (!mqttClient.active()) {
-    reconnectMQTT();
-  }
-
-  String payload = "Giroscopio: X=" + nf(gyroX, 1, 2) + ", Y=" + nf(gyroY, 1, 2) + ", Z=" + nf(gyroZ, 1, 2);
-  payload += " | Acelerometro: X=" + nf(accelX, 1, 2) + ", Y=" + nf(accelY, 1, 2) + ", Z=" + nf(accelZ, 1, 2);
-  mqttClient.write(payload);
-  println("Dados enviados ao MQTT: " + payload);
-}
-
-// Função para reconectar ao broker MQTT
-void reconnectMQTT() {
-  while (!mqttClient.active()) {
-    println("Tentando conectar ao broker MQTT...");
-    mqttClient = new Client(this, mqttServer, mqttPort);
-    if (mqttClient.active()) {
-      println("Conectado!");
-    } else {
-      println("Falha na conexão, tentando novamente em 5 segundos...");
-      delay(5000);
-    }
-  }
-}
-
 // Comandos de teclado para reiniciar terreno ou alternar movimento
 void keyPressed() {
   if (key == 'r' || key == 'R') {
     generateTerrain();
   } else if (key == 'm' || key == 'M') {
     moving = !moving;
-    if (moving) {
-      println("Movimento iniciado.");
-      lastMoveTime = millis();
-    } else {
-      println("Movimento parado.");
-      vibrating = false;
-    }
   }
 }
 
-// Classe para representar uma casa
+// Classe para casas
 class House {
-  int x, y;
-  float z;
+  float x, y, z;
+  float w, h;
 
-  House(int x, int y, float z) {
-    this.x = x;
-    this.y = y;
+  House(float x, float y, float z) {
+    this.x = x * scl;
+    this.y = y * scl;
     this.z = z;
-  }
-
-  void updatePosition(float[][] terrain) {
-    this.z = terrain[x][y];
+    this.w = scl;
+    this.h = scl;
   }
 
   void display() {
     pushMatrix();
-    translate(x * scl, y * scl, z);
-    fill(255, 200, 0);
-    box(scl * 0.8);
+    translate(x, y, z);
+    fill(255, 0, 0);
+    box(w, h, h);
     popMatrix();
+  }
+
+  void updatePosition(float[][] terrain) {
+    int tx = int(x / scl);
+    int ty = int(y / scl);
+    z = terrain[tx][ty];
   }
 }
 
-// Função para adicionar casas ao redor do sensor
+// Adicionar casas ao redor do sensor
 void addHousesAroundSensor() {
-  int houseCount = 4;
-  int offset = 2;
-
-  for (int i = 0; i < houseCount; i++) {
+  int offset = 5;
+  for (int i = 0; i < 4; i++) {
     int houseX = sensorX + (i % 2 == 0 ? -offset : offset);
     int houseY = sensorY + (i < 2 ? -offset : offset);
-    houses.add(new House(houseX, houseY, terrain[houseX][houseY]));
+    float houseZ = terrain[houseX][houseY];
+    houses.add(new House(houseX, houseY, houseZ));
   }
 }
