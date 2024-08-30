@@ -5,7 +5,7 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import processing.serial.*;
 import java.util.ArrayList;
-import processing.data.JSONObject;  // Importação da biblioteca JSON interna do Processing
+import processing.data.JSONObject;  // Importação da biblioteca JSON interna do Procesing
 
 // Configurações da rede WiFi (não utilizadas diretamente no Processing)
 final String ssid = "";  // nome da rede WiFi
