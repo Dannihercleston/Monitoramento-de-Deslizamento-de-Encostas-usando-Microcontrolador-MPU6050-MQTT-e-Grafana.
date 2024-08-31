@@ -34,7 +34,7 @@ float giroscopioX, giroscopioY, giroscopioZ;
 float temperatura;
 
 // Intervalo de publicação de dados (ajuste para a frequência desejada em tempo real)
-const long intervalo = 1500;  // Enviar dados a cada 20 milissegundos (50 Hz)
+const long intervalo = 1500;  // Enviar dados a cada  milissegundos (50 Hz)
 
 void configurar_wifi() {
   Serial.begin(115200);
