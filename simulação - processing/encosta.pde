@@ -5,7 +5,7 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import processing.serial.*;
 import java.util.ArrayList;
-import processing.data.JSONObject;  // Importação da biblioteca JSON interna do Procesing
+import processing.data.JSONObject;  // Importação da biblioteca JSON interna do Processing
 
 // Configurações da rede WiFi (não utilizadas diretamente no Processing)
 final String ssid = "";  // nome da rede WiFi
@@ -97,7 +97,17 @@ void draw() {
       vertex((x + 1) * scl, y * scl, terrain[x + 1][y]);
       vertex((x + 1) * scl, (y + 1) * scl, terrain[x + 1][y + 1]);
       vertex(x * scl, (y + 1) * scl, terrain[x][y + 1]);
-      endShape();
+      endShape(CLOSE);
+
+      // Desenha linhas de contorno para o terreno
+      stroke(0);
+      noFill();
+      beginShape();
+      vertex(x * scl, y * scl, terrain[x][y]);
+      vertex((x + 1) * scl, y * scl, terrain[x + 1][y]);
+      vertex((x + 1) * scl, (y + 1) * scl, terrain[x + 1][y + 1]);
+      vertex(x * scl, (y + 1) * scl, terrain[x][y + 1]);
+      endShape(CLOSE);
     }
   }
 
@@ -128,23 +138,23 @@ void connectToMQTT() {
 
 // Processar os dados do sensor recebidos do MQTT
 void parseSensorData(String payload) {
-    try {
-        JSONObject json = JSONObject.parse(payload);  // Usando a biblioteca JSON interna
+  try {
+    JSONObject json = JSONObject.parse(payload);  // Usando a biblioteca JSON interna
 
-        // Extrair os valores do JSON
-        accelX = json.getFloat("ax");
-        accelY = json.getFloat("ay");
-        accelZ = json.getFloat("az");
-        gyroX = json.getFloat("gx");
-        gyroY = json.getFloat("gy");
-        gyroZ = json.getFloat("gz");
+    // Extrair os valores do JSON
+    accelX = json.getFloat("ax");
+    accelY = json.getFloat("ay");
+    accelZ = json.getFloat("az");
+    gyroX = json.getFloat("gx");
+    gyroY = json.getFloat("gy");
+    gyroZ = json.getFloat("gz");
 
-        // Exibir os dados recebidos no console
-        println("Dados recebidos: ax=" + accelX + ", ay=" + accelY + ", az=" + accelZ +
-                ", gx=" + gyroX + ", gy=" + gyroY + ", gz=" + gyroZ);
-    } catch (Exception e) {
-        println("Erro ao processar dados JSON: " + payload);
-    }
+    // Exibir os dados recebidos no console
+    println("Dados recebidos: ax=" + accelX + ", ay=" + accelY + ", az=" + accelZ +
+            ", gx=" + gyroX + ", gy=" + gyroY + ", gz=" + gyroZ);
+  } catch (Exception e) {
+    println("Erro ao processar dados JSON: " + payload);
+  }
 }
 
 void generateTerrain() {
