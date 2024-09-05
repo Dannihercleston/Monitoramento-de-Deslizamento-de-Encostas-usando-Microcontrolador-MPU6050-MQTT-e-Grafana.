@@ -5,23 +5,23 @@ from datetime import datetime, timedelta, timezone
 import numpy as np
 
 # Configurações do InfluxDB
-token = ""
+token = "PsUAIrOkU250KbfW8Vcf8PXr-BXNmxvfJYuJZ9BTaypY4lbyJsDCPUr9pqK5jjAA1y6_23Ocs8hrP4zR4hnyKQ=="
 org = "Monitoramento de Encostas"
 bucket = "Dados"
 url = "http://localhost:8086"  # ou o URL do seu servidor InfluxDB
 
 # Configurações do Telegram
-telegram_bot_token = ''
-telegram_chat_id = ''
+telegram_bot_token = '7507857581:AAGG40ghZg7U8k-XcuGwQK-sh77kPJ1CJTs'
+telegram_chat_id = '-4512529076'
 
 # Limites para desvio padrão
 limites_desvio_padrao = {
-    "ax": 0.0919,
-    "ay": 0.0543,
-    "az": 0.4282,
-    "gx": 0.0014,
-    "gy": 0.0002,
-    "gz": 0.0009
+    "ax": 2.3840437043484105e-15,
+    "ay": 1.615464016800653e-13,
+    "az": 9.912347992235866e-15,
+    "gx": 1.406326764427561e-15,
+    "gy": 3.64039894836553e-16,
+    "gz": 7.28079789673106e-16
 }
 
 # Função para enviar alerta para o Telegram
@@ -105,4 +105,4 @@ def monitorar_dados():
 # Loop de monitoramento
 while True:
     monitorar_dados()
-    time.sleep(60)  # Espera 60 segundos antes de fazer a próxima consulta
+    time.sleep(20)  # Espera 60 segundos antes de fazer a próxima consulta
