@@ -5,14 +5,14 @@ from datetime import datetime, timedelta, timezone
 import numpy as np
 
 # Configurações do InfluxDB
-token = "PsUAIrOkU250KbfW8Vcf8PXr-BXNmxvfJYuJZ9BTaypY4lbyJsDCPUr9pqK5jjAA1y6_23Ocs8hrP4zR4hnyKQ=="
+token = ""
 org = "Monitoramento de Encostas"
 bucket = "Dados"
 url = "http://localhost:8086"  # ou o URL do seu servidor InfluxDB
 
 # Configurações do Telegram
-telegram_bot_token = '7507857581:AAGG40ghZg7U8k-XcuGwQK-sh77kPJ1CJTs'
-telegram_chat_id = '-4512529076'
+telegram_bot_token = ''
+telegram_chat_id = ''
 
 # Limites para desvio padrão
 limites_desvio_padrao = {
