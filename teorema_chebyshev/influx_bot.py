@@ -5,14 +5,14 @@ from datetime import datetime, timedelta, timezone
 import numpy as np
 
 # Configurações do InfluxDB
-token = "${token_influx}"
-org = "Monitoramento de Encostas"
-bucket = "Dados"
+token = ""
+org = ""
+bucket = ""
 url = "http://localhost:8086"  # ou o URL do seu servidor InfluxDB
 
 # Configurações do Telegram
-telegram_bot_token = '${token_bot}'
-telegram_chat_id = '${chat_id}'
+telegram_bot_token = ''
+telegram_chat_id = ''
 
 # Limites para desvio padrão
 limites_desvio_padrao = {
@@ -53,6 +53,7 @@ def get_query(start_time, end_time):
     |> range(start: {start_time}, stop: {end_time})
     |> filter(fn: (r) => r["_measurement"] == "mqtt_consumer")
     |> filter(fn: (r) => r["_field"] == "ax" or r["_field"] == "ay" or r["_field"] == "az" or r["_field"] == "gx" or r["_field"] == "gy" or r["_field"] == "gz" or r["_field"] == "temp")
+    |> filter(fn: (r) => r["topic"] == "Encostas/Kalman")
     |> yield(name: "mean")
     '''
 
@@ -96,7 +97,7 @@ def monitorar_dados():
                 print(f"Dados fora do intervalo: {dados_fora_do_intervalo}")
                 
                 if dados_fora_do_intervalo:
-                    message = f'Alerta: {len(dados_fora_do_intervalo)} valores do eixo {eixo} estão fora do intervalo calculado de Chebyshev ({intervalo_inf:.4f} a {intervalo_sup:.4f}).'
+                    message = f'Alerta: 🚨 {len(dados_fora_do_intervalo)} valores do eixo {eixo} estão fora do deśvio padrão! ({intervalo_inf:.4f} a {intervalo_sup:.4f}).'
                     send_telegram_alert(message)
                     
     except Exception as e:

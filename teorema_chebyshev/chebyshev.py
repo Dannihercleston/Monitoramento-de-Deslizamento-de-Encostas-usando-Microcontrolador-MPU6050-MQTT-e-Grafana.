@@ -3,7 +3,7 @@ import pandas as pd
 from scipy.signal import butter, filtfilt
 
 # Carregar o CSV
-df = pd.read_csv("/home/livia/Documentos/sensor/Monitoramento-de-Deslizamento-de-Encostas-usando-Microcontrolador-MPU6050-MQTT-e-Grafana./teorema_chebyshev/dados_filtrados3108.csv")
+df = pd.read_csv("")
 df.columns = ['start', 'stop', 'time', 'value', 'field']
 df['value'] = pd.to_numeric(df['value'], errors='coerce')
 
@@ -45,7 +45,7 @@ for eixo in eixos:
 
 # Converter a lista de resultados em um DataFrame
 resultados_df = pd.DataFrame(resultados)
-resultados_df.to_csv('/home/livia/Documentos/sensor/Monitoramento-de-Deslizamento-de-Encostas-usando-Microcontrolador-MPU6050-MQTT-e-Grafana./teorema_chebyshev/regrausada', index=False)
+resultados_df.to_csv('', index=False)
 
 for resultado in resultados:
     print(f"{resultado['eixo']}:")
